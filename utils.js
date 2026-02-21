@@ -92,38 +92,42 @@ export class GlobalSignalsHandler extends BasicHandler {
   }
 }
 
-export class TimeoutsHandler extends BasicHandler {
-  _create(item) {
-    let name = item[0]
-    let delay = item[1]
-    let timeoutHandler = item[2]
-
-    this._remove(item)
-
-    this[name] = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
-      this[name] = 0
-      timeoutHandler()
-      return GLib.SOURCE_REMOVE
-    })
-
-    return [[name]]
+export class TimeoutsHandler {
+  constructor() {
+    this._timeouts = {}
   }
 
-  _remove(item) {
-    let name = item[0]
+  add(item) {
+    let [name, delay, handler] = item
+    this.remove(name)
 
-    if (this[name]) {
-      GLib.Source.remove(this[name])
-      this[name] = 0
-    }
+    this._timeouts[name] = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      delay,
+      () => {
+        delete this._timeouts[name]
+        handler()
+        return GLib.SOURCE_REMOVE
+      },
+    )
   }
 
   remove(name) {
-    this._remove([name])
+    if (this._timeouts[name]) {
+      GLib.Source.remove(this._timeouts[name])
+      delete this._timeouts[name]
+    }
   }
 
   getId(name) {
-    return this[name] ? this[name] : 0
+    return this._timeouts[name] || 0
+  }
+
+  destroy() {
+    for (let name in this._timeouts) {
+      GLib.Source.remove(this._timeouts[name])
+    }
+    this._timeouts = {}
   }
 }
 

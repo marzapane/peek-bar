@@ -64,15 +64,13 @@ export class Intellihide {
     this._notificationSettings = notificationSettings
     this._holdStatus = Hold.NONE
 
-    this._signalsHandler = new Utils.GlobalSignalsHandler()
-    this._timeoutsHandler = new Utils.TimeoutsHandler()
+    this._signalsHandler = null
+    this._timeoutsHandler = null
 
     this._intellihideChangedId = this._settings.connect(
       'changed::intellihide',
       () => this._changeEnabledStatus(),
     )
-
-    this.enabled = false
   }
 
   init() {
@@ -80,9 +78,10 @@ export class Intellihide {
   }
 
   enable() {
-    if (this.enabled) return
+    if (this._signalsHandler) return
 
-    this.enabled = true
+    this._signalsHandler = new Utils.GlobalSignalsHandler()
+    this._timeoutsHandler = new Utils.TimeoutsHandler()
     this._monitor = this._panelAdapter.monitor
     this._animationDestination = -1
     this._pendingUpdate = false
@@ -95,6 +94,7 @@ export class Intellihide {
 
     this._setTrackPanel(true)
     this._bindGeneralSignals()
+
 
     if (this._hidesFromWindows()) {
       const watched = this._settings.get_boolean('hide-from-windows')
@@ -131,23 +131,25 @@ export class Intellihide {
     ])
   }
 
-  disable(reset) {
-    if (!this.enabled) return
+  disable() {
+    if (!this._signalsHandler) return
 
-    this.enabled = false
     this._hover = false
 
     if (this._proximityWatchId) {
       this._proximityManager.removeWatch(this._proximityWatchId)
+      this._proximityWatchId = null
     }
 
     this._setTrackPanel(false)
     this._removeRevealMechanism()
 
-    this._revealPanel(!reset)
+    this._revealPanel(true)
 
     this._signalsHandler.destroy()
+    this._signalsHandler = null
     this._timeoutsHandler.destroy()
+    this._timeoutsHandler = null
   }
 
   destroy() {
@@ -156,14 +158,12 @@ export class Intellihide {
       this._intellihideChangedId = 0
     }
 
-    if (this.enabled) {
-      this.disable()
-    }
+    this.disable()
   }
 
   revealAndHold(holdStatus, immediate) {
     if (
-      !this.enabled ||
+      !this._signalsHandler ||
       (holdStatus == Hold.NOTIFY &&
         (!this._settings.get_boolean('show-on-notification') ||
           !this._notificationSettings.get_boolean('show-banners')))
@@ -176,7 +176,7 @@ export class Intellihide {
   }
 
   release(holdStatus) {
-    if (!this.enabled) return
+    if (!this._signalsHandler) return
 
     if (this._holdStatus & holdStatus) this._holdStatus -= holdStatus
 
@@ -186,7 +186,7 @@ export class Intellihide {
   }
 
   reset() {
-    this.disable(true)
+    this.disable()
     this.enable()
   }
 
@@ -199,8 +199,9 @@ export class Intellihide {
 
   _changeEnabledStatus() {
     let enabled = this._settings.get_boolean('intellihide')
+    let currentlyEnabled = !!this._signalsHandler
 
-    if (this.enabled !== enabled) {
+    if (currentlyEnabled !== enabled) {
       this[enabled ? 'enable' : 'disable']()
     }
   }

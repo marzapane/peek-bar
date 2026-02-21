@@ -17,14 +17,12 @@
 
 import Gio from 'gi://Gio'
 
-import St from 'gi://St'
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 import { EventEmitter } from 'resource:///org/gnome/shell/misc/signals.js'
 import {
   Extension,
   InjectionManager,
-  gettext as _,
 } from 'resource:///org/gnome/shell/extensions/extension.js'
 
 import * as Intellihide from './intellihide.js'
@@ -166,17 +164,6 @@ export default class TopBarIntellihideExtension extends Extension {
 
     this._settings = null
     this._notificationSettings = null
-  }
-
-  openPreferences() {
-    Utils.notify(
-      _('No Preferences'),
-      _('This extension has no configurable preferences.'),
-      'dialog-information-symbolic',
-      null,
-      null,
-      true,
-    )
   }
 
 }
