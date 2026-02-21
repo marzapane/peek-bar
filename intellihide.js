@@ -64,22 +64,6 @@ export class Intellihide {
     this._notificationSettings = notificationSettings
     this._holdStatus = Hold.NONE
 
-    this._signalsHandler = null
-    this._timeoutsHandler = null
-
-    this._intellihideChangedId = this._settings.connect(
-      'changed::intellihide',
-      () => this._changeEnabledStatus(),
-    )
-  }
-
-  init() {
-    this._changeEnabledStatus()
-  }
-
-  enable() {
-    if (this._signalsHandler) return
-
     this._signalsHandler = new Utils.GlobalSignalsHandler()
     this._timeoutsHandler = new Utils.TimeoutsHandler()
     this._monitor = this._panelAdapter.monitor
@@ -94,7 +78,6 @@ export class Intellihide {
 
     this._setTrackPanel(true)
     this._bindGeneralSignals()
-
 
     if (this._hidesFromWindows()) {
       const watched = this._settings.get_boolean('hide-from-windows')
@@ -131,9 +114,7 @@ export class Intellihide {
     ])
   }
 
-  disable() {
-    if (!this._signalsHandler) return
-
+  destroy() {
     this._hover = false
 
     if (this._proximityWatchId) {
@@ -147,26 +128,14 @@ export class Intellihide {
     this._revealPanel(true)
 
     this._signalsHandler.destroy()
-    this._signalsHandler = null
     this._timeoutsHandler.destroy()
-    this._timeoutsHandler = null
-  }
-
-  destroy() {
-    if (this._intellihideChangedId) {
-      this._settings.disconnect(this._intellihideChangedId)
-      this._intellihideChangedId = 0
-    }
-
-    this.disable()
   }
 
   revealAndHold(holdStatus, immediate) {
     if (
-      !this._signalsHandler ||
-      (holdStatus == Hold.NOTIFY &&
-        (!this._settings.get_boolean('show-on-notification') ||
-          !this._notificationSettings.get_boolean('show-banners')))
+      holdStatus == Hold.NOTIFY &&
+      (!this._settings.get_boolean('show-on-notification') ||
+        !this._notificationSettings.get_boolean('show-banners'))
     )
       return
 
@@ -176,18 +145,11 @@ export class Intellihide {
   }
 
   release(holdStatus) {
-    if (!this._signalsHandler) return
-
     if (this._holdStatus & holdStatus) this._holdStatus -= holdStatus
 
     if (!this._holdStatus) {
       this._queueUpdatePanelPosition()
     }
-  }
-
-  reset() {
-    this.disable()
-    this.enable()
   }
 
   _hidesFromWindows() {
@@ -196,16 +158,6 @@ export class Intellihide {
       this._settings.get_boolean('hide-from-monitor-windows')
     )
   }
-
-  _changeEnabledStatus() {
-    let enabled = this._settings.get_boolean('intellihide')
-    let currentlyEnabled = !!this._signalsHandler
-
-    if (currentlyEnabled !== enabled) {
-      this[enabled ? 'enable' : 'disable']()
-    }
-  }
-
 
   _bindGeneralSignals() {
     let setOverviewTransition = (active) => {
@@ -220,19 +172,6 @@ export class Intellihide {
         this._panelAdapter.taskbar,
         ['menu-closed', 'end-drag'],
         () => this._queueUpdatePanelPosition(),
-      ],
-      [
-        this._settings,
-        [
-          'changed::use-pointer',
-          'changed::use-pressure',
-          'changed::hide-from-windows',
-          'changed::hide-from-monitor-windows',
-          'changed::behaviour',
-          'changed::pressure-threshold',
-          'changed::pressure-time',
-        ],
-        () => this.reset(),
       ],
       [
         this._panelAdapter.taskbar.previewMenu,

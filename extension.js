@@ -45,31 +45,45 @@ class StockTopBarController {
 
     this._patchOverviewAllocation()
 
-    this.intellihide = new Intellihide.Intellihide(
-      this._panelAdapter,
-      this._settings,
-      this._notificationSettings,
+    this._signalsHandler.add(
+      [
+        Utils.DisplayWrapper.getMonitorManager(),
+        'monitors-changed',
+        () => {
+          if (!Main.layoutManager.primaryMonitor) return
+
+          this._panelAdapter.monitor = Main.layoutManager.primaryMonitor
+          this._resetIntellihide()
+        },
+      ],
+      [
+        this._settings,
+        'changed::intellihide',
+        () => this._updateIntellihide(),
+      ],
+      [
+        this._settings,
+        [
+          'changed::use-pointer',
+          'changed::use-pressure',
+          'changed::hide-from-windows',
+          'changed::hide-from-monitor-windows',
+          'changed::behaviour',
+          'changed::pressure-threshold',
+          'changed::pressure-time',
+        ],
+        () => this._resetIntellihide(),
+      ],
     )
-    this.intellihide.init()
 
-    this._signalsHandler.add([
-      Utils.DisplayWrapper.getMonitorManager(),
-      'monitors-changed',
-      () => {
-        if (!Main.layoutManager.primaryMonitor) return
-
-        this._panelAdapter.monitor = Main.layoutManager.primaryMonitor
-        this.intellihide?.reset()
-      },
-    ])
+    this._updateIntellihide()
   }
 
   disable() {
+    this._destroyIntellihide()
+
     this._injectionManager?.clear()
     this._injectionManager = null
-
-    this.intellihide?.destroy()
-    this.intellihide = null
 
     this._signalsHandler?.destroy()
     this._signalsHandler = null
@@ -77,6 +91,34 @@ class StockTopBarController {
     this.proximityManager?.destroy()
     this.proximityManager = null
     this._panelAdapter = null
+  }
+
+  _updateIntellihide() {
+    if (this._settings.get_boolean('intellihide')) {
+      if (!this.intellihide) this._createIntellihide()
+    } else {
+      this._destroyIntellihide()
+    }
+  }
+
+  _createIntellihide() {
+    this.intellihide = new Intellihide.Intellihide(
+      this._panelAdapter,
+      this._settings,
+      this._notificationSettings,
+    )
+  }
+
+  _destroyIntellihide() {
+    this.intellihide?.destroy()
+    this.intellihide = null
+  }
+
+  _resetIntellihide() {
+    if (this.intellihide) {
+      this._destroyIntellihide()
+      this._createIntellihide()
+    }
   }
 
 
