@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extensions">
+  <enum id='org.gnome.shell.extensions.peek-bar.proximityBehavior'>
+    <value value='0' nick='ALL_WINDOWS'/>
+    <value value='1' nick='FOCUSED_WINDOWS'/>
+    <value value='2' nick='MAXIMIZED_WINDOWS'/>
+  </enum>
+  <schema path="/org/gnome/shell/extensions/peek-bar/" id="org.gnome.shell.extensions.peek-bar">
+    <key type="b" name="intellihide">
+      <default>true</default>
+      <summary>Intellihide</summary>
+      <description>Whether to intelligently hide the top bar</description>
+    </key>
+    <key type="b" name="hide-from-windows">
+      <default>false</default>
+      <summary>Only hide from overlapping windows</summary>
+      <description>Only hide the bar when windows overlap it</description>
+    </key>
+    <key type="b" name="hide-from-monitor-windows">
+      <default>false</default>
+      <summary>Only hide from windows on monitor</summary>
+      <description>Only hide from windows on the same monitor</description>
+    </key>
+    <key name="behaviour" enum="org.gnome.shell.extensions.peek-bar.proximityBehavior">
+      <default>'FOCUSED_WINDOWS'</default>
+      <summary>Intellihide behaviour</summary>
+      <description>Which windows to consider when determining overlap</description>
+    </key>
+    <key type="b" name="use-pointer">
+      <default>true</default>
+      <summary>Reveal with mouse pointer</summary>
+      <description>Moving the mouse pointer to the top edge reveals the bar</description>
+    </key>
+    <key type="b" name="use-pressure">
+      <default>false</default>
+      <summary>Require edge pressure</summary>
+      <description>Pressure must be applied to the screen edge to reveal the bar</description>
+    </key>
+    <key type="i" name="pressure-threshold">
+      <default>100</default>
+      <summary>Pressure threshold</summary>
+      <description>The pressure needed to reveal the bar</description>
+    </key>
+    <key type="i" name="pressure-time">
+      <default>1000</default>
+      <summary>Pressure time</summary>
+      <description>Duration in milliseconds that pressure must be applied</description>
+    </key>
+    <key type="b" name="revealed-hover">
+      <default>true</default>
+      <summary>Stay revealed when hovered</summary>
+      <description>Keep the bar visible while the mouse pointer is over it</description>
+    </key>
+    <key type="b" name="show-in-fullscreen">
+      <default>false</default>
+      <summary>Allow reveal in fullscreen</summary>
+      <description>Allow the bar to be revealed while an application is in fullscreen</description>
+    </key>
+    <key type="b" name="show-on-notification">
+      <default>false</default>
+      <summary>Reveal on notification</summary>
+      <description>Reveal the bar when a notification arrives</description>
+    </key>
+    <key type="i" name="animation-time">
+      <default>200</default>
+      <summary>Animation time</summary>
+      <description>Duration in milliseconds of the hide/reveal animation</description>
+    </key>
+    <key type="i" name="close-delay">
+      <default>400</default>
+      <summary>Hide delay</summary>
+      <description>Delay in milliseconds before hiding the bar</description>
+    </key>
+    <key type="i" name="reveal-delay">
+      <default>200</default>
+      <summary>Reveal delay</summary>
+      <description>Delay in milliseconds before revealing the bar</description>
+    </key>
+    <key type="i" name="enable-start-delay">
+      <default>2000</default>
+      <summary>Startup delay</summary>
+      <description>Delay before enabling intellihide on startup</description>
+    </key>
+
+  </schema>
+</schemalist>

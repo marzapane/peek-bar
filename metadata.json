@@ -1,0 +1,15 @@
+{
+  "description": "Hides the GNOME top bar and reveals it on hover with smooth animations, except in the overview.",
+  "extension-id": "peek-bar",
+  "name": "Peek bar",
+  "shell-version": [
+    "46",
+    "47",
+    "48",
+    "49"
+  ],
+  "settings-schema": "org.gnome.shell.extensions.peek-bar",
+  "url": "https://github.com/rachalaraj/peek-bar",
+  "uuid": "peek-bar@rachalaraj.github.com",
+  "version": 1
+}
