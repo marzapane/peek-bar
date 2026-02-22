@@ -11,7 +11,7 @@
   "settings-schema": "org.gnome.shell.extensions.peek-bar",
   "url": "https://github.com/rachalaraj/peek-bar",
   "uuid": "peek-bar@rachalaraj.github.com",
-  "version": 3,
+  "version": 4,
   "donations": {
     "buymeacoffee": "rachalaraj"
   }

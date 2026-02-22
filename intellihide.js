@@ -29,20 +29,16 @@ import * as PointerWatcher from 'resource:///org/gnome/shell/ui/pointerWatcher.j
 import * as Proximity from './proximity.js'
 import * as Utils from './utils.js'
 
-//timeout intervals
 const CHECK_POINTER_MS = 200
 const CHECK_GRAB_MS = 400
 const POST_ANIMATE_MS = 50
 const MIN_UPDATE_MS = 250
 
-//timeout names
 const T1 = 'checkGrabTimeout'
 const T2 = 'limitUpdateTimeout'
 const T3 = 'postAnimateTimeout'
 const T4 = 'enableStartTimeout'
 
-// GNOME Shell versions may express this value in milliseconds (>1) or seconds (<=1).
-// Normalize to seconds for use with the animate() helper.
 const SIDE_CONTROLS_ANIMATION_TIME =
   OverviewControls.SIDE_CONTROLS_ANIMATION_TIME > 1
     ? OverviewControls.SIDE_CONTROLS_ANIMATION_TIME / 1000
@@ -320,8 +316,6 @@ export class Intellihide {
       this._timeoutsHandler.getId(T2) &&
       !this._overviewTransition
     ) {
-      //unless this is a mouse interaction or entering/leaving the overview, limit the number
-      //of updates, but remember to update again when the limit timeout is reached
       this._pendingUpdate = true
     } else if (!this._holdStatus) {
       this._checkIfShouldBeVisible(fromRevealMechanism)
@@ -358,7 +352,6 @@ export class Intellihide {
       let mouseBtnIsPressed =
         global.get_pointer()[2] & Clutter.ModifierType.BUTTON1_MASK
 
-      //the user is trying to reveal the panel
       if (this._monitor.inFullscreen && !mouseBtnIsPressed) {
         return this._settings.get_boolean('show-in-fullscreen')
       }
@@ -384,8 +377,12 @@ export class Intellihide {
         ) ||
         this._panelAdapter.panel.contains(sourceActor))
 
+    // Treat any active panel menu as a grab (e.g. Apps Menu extension)
+    if (!isGrab && Main.panel.menuManager?.activeMenu)
+      isGrab = true
+
     if (isGrab)
-      //there currently is a grab on a child of the panel, check again soon to catch its release
+      //there currently is a grab on a panel child or menu, check again soon to catch its release
       this._timeoutsHandler.add([
         T1,
         CHECK_GRAB_MS,
@@ -444,11 +441,9 @@ export class Intellihide {
         delay = this._settings.get_int('reveal-delay') * 0.001
 
       let tweenOpts = {
-        //when entering/leaving the overview, use its animation time instead of the one from the settings
         time: this._overviewTransition
           ? SIDE_CONTROLS_ANIMATION_TIME
           : this._settings.get_int('animation-time') * 0.001,
-        //only delay the animation when hiding the panel after the user hovered out
         delay,
         transition: 'easeOutQuad',
         onComplete: () => {

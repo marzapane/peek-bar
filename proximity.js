@@ -23,10 +23,8 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 
 import * as Utils from './utils.js'
 
-//timeout intervals
 const MIN_UPDATE_MS = 200
 
-//timeout names
 const T1 = 'limitUpdateTimeout'
 
 export const Mode = {
@@ -217,8 +215,6 @@ export class ProximityManager {
     return (
       metaWindow &&
       !metaWindow.minimized &&
-      // Exclude desktop icon windows created by the Desktop Icons NG (DING)
-      // extension, which sets this custom property on its windows.
       !metaWindow.customJS_ding &&
       this._checkIfHandledWindowType(metaWindow)
     )
@@ -277,7 +273,6 @@ export class ProximityManager {
           mw.get_monitor() == watch.monitorIndex,
       )
 
-    //Mode.ALL_WINDOWS
     return metaWindows.some((mw) => this._checkProximity(mw, watch))
   }
 
