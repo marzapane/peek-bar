@@ -5,7 +5,8 @@ Coming from Windows 11, GNOME was missing one crucial feature so i made it mysel
 <img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/ae92bb72-410d-418c-80cb-f24e2232eb82" />
 
 
-<img width="640" height="360" alt="image" src="https://github.com/user-attachments/assets/8c6bf596-a7e6-47f1-8e26-29fca5d7781f" />
+![Untitled video](https://github.com/user-attachments/assets/7d22e0f7-acf1-4bfe-91b1-f2ea4ec8f195)
+
 
 So 3 months ago i made the jump from windows 11 to linux (omarchy) which literally made me fall in love with linux. it’s just fast, lightweight and customizable and the themes etc wow. eventually i went down the deep hole trying raw arch+hyprland and niri, tried some other distros and also distro-hopping between omarchy and fedora gnome. i finally decided to leave omarchy after reading this article ‘a word on omarchy’.
 
