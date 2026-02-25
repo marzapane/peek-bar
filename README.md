@@ -2,10 +2,6 @@
 
 Coming from Windows 11, GNOME was missing one crucial feature so i made it myself
 
-<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/ae92bb72-410d-418c-80cb-f24e2232eb82" />
-
-
-
 ![Untitled video](https://github.com/user-attachments/assets/71d1e594-bbde-46f8-9ae1-168dd3478586)
 
 
