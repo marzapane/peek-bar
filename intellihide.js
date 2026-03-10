@@ -377,12 +377,10 @@ export class Intellihide {
         ) ||
         this._panelAdapter.panel.contains(sourceActor))
 
-    // Treat any active panel menu as a grab (e.g. Apps Menu extension)
     if (!isGrab && Main.panel.menuManager?.activeMenu)
       isGrab = true
 
     if (isGrab)
-      //there currently is a grab on a panel child or menu, check again soon to catch its release
       this._timeoutsHandler.add([
         T1,
         CHECK_GRAB_MS,

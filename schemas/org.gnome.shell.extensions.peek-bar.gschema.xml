@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="gnome-shell-extensions">
+<schemalist gettext-domain="peek-bar">
   <enum id='org.gnome.shell.extensions.peek-bar.proximityBehavior'>
     <value value='0' nick='ALL_WINDOWS'/>
     <value value='1' nick='FOCUSED_WINDOWS'/>
@@ -82,5 +82,10 @@
       <description>Delay before enabling intellihide on startup</description>
     </key>
 
+    <key type="as" name="toggle-shortcut">
+      <default>['&lt;Super&gt;h']</default>
+      <summary>Toggle shortcut</summary>
+      <description>Keyboard shortcut to toggle the top bar</description>
+    </key>
   </schema>
 </schemalist>
