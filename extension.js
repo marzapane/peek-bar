@@ -24,7 +24,8 @@ import Shell from 'gi://Shell'
 import GObject from 'gi://GObject'
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
-import { QuickToggle, SystemIndicator } from 'resource:///org/gnome/shell/ui/quickSettings.js'
+import { PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMenu.js'
+import { QuickMenuToggle, SystemIndicator } from 'resource:///org/gnome/shell/ui/quickSettings.js'
 import { EventEmitter } from 'resource:///org/gnome/shell/misc/signals.js'
 import {
   Extension,
@@ -37,24 +38,43 @@ import * as Utils from './utils.js'
 
 const PeekBarIndicator = GObject.registerClass(
   class PeekBarIndicator extends SystemIndicator {
-    _init(settings) {
+    _init(settings, extension) {
       super._init()
       this._settings = settings
 
-      this.quickToggle = new QuickToggle({
+      this.quickToggle = new QuickMenuToggle({
         title: 'Peek Bar',
         iconName: 'view-reveal-symbolic',
         toggleMode: true,
       })
 
+      this.quickToggle.menu.setHeader('view-reveal-symbolic', 'Peek Bar')
+
+      let prefsItem = new PopupMenuItem('Settings')
+      prefsItem.connect('activate', () => {
+        extension.openPreferences()
+      })
+      this.quickToggle.menu.addMenuItem(prefsItem)
+
       this.quickToggle.checked = this._settings.get_boolean('intellihide')
 
-      this.quickToggle.connect('clicked', () => {
+      this._toggleClickedId = this.quickToggle.connect('clicked', () => {
         this._settings.set_boolean('intellihide', this.quickToggle.checked)
       })
 
-      this._settings.connect('changed::intellihide', () => {
+      this._settingsChangedId = this._settings.connect('changed::intellihide', () => {
         this.quickToggle.checked = this._settings.get_boolean('intellihide')
+      })
+
+      this.connect('destroy', () => {
+        if (this._toggleClickedId) {
+            this.quickToggle.disconnect(this._toggleClickedId)
+            this._toggleClickedId = null
+        }
+        if (this._settingsChangedId) {
+            this._settings.disconnect(this._settingsChangedId)
+            this._settingsChangedId = null
+        }
       })
 
       this.quickSettingsItems.push(this.quickToggle)
@@ -62,9 +82,10 @@ const PeekBarIndicator = GObject.registerClass(
   })
 
 class StockTopBarController {
-  constructor(settings, notificationSettings) {
+  constructor(settings, notificationSettings, extension) {
     this._settings = settings
     this._notificationSettings = notificationSettings
+    this._extension = extension
   }
 
   enable() {
@@ -245,7 +266,7 @@ class StockTopBarController {
   }
 
   _setupIndicator() {
-    this._indicator = new PeekBarIndicator(this._settings)
+    this._indicator = new PeekBarIndicator(this._settings, this._extension)
     Main.panel.statusArea.quickSettings.addExternalIndicator(this._indicator)
   }
 
@@ -317,6 +338,7 @@ export default class TopBarIntellihideExtension extends Extension {
     this._controller = new StockTopBarController(
       this._settings,
       this._notificationSettings,
+      this,
     )
     this._controller.enable()
   }

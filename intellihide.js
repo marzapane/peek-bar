@@ -180,7 +180,8 @@ export class Intellihide {
       [Main.overview, 'hidden', () => setOverviewTransition(false)],
     )
 
-    if (Meta.is_wayland_compositor()) {
+    let isWayland = typeof Meta.is_wayland_compositor === 'function' ? Meta.is_wayland_compositor() : true;
+    if (isWayland) {
       this._signalsHandler.add([
         this._panelBox,
         'notify::visible',
