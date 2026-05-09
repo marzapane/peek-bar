@@ -16,6 +16,20 @@ export default class PeekBarPreferences extends ExtensionPreferences {
         const groupGeneral = new Adw.PreferencesGroup({ title: _('General') });
         page.add(groupGeneral);
 
+        const rowHideTopBar = new Adw.SwitchRow({
+            title: _('Hide Top Bar'),
+            subtitle: _('Automatically hide the top bar when a window overlaps it'),
+        });
+        groupGeneral.add(rowHideTopBar);
+        settings.bind('intellihide', rowHideTopBar, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const rowShowIndicator = new Adw.SwitchRow({
+            title: _('Show Quick Settings Toggle'),
+            subtitle: _('Show the Peek Bar toggle in the Quick Settings panel'),
+        });
+        groupGeneral.add(rowShowIndicator);
+        settings.bind('show-indicator', rowShowIndicator, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         const rowShowFullscreen = new Adw.SwitchRow({
             title: _('Show in Fullscreen'),
             subtitle: _('Allow revealing the bar while an application is in fullscreen'),
@@ -27,7 +41,7 @@ export default class PeekBarPreferences extends ExtensionPreferences {
             title: _('Overlap Detection'),
             subtitle: _('Which windows to consider when determining overlap'),
             model: new Gtk.StringList({
-                strings: [_('All Windows'), _('Focused Windows'), _('Maximized Windows')],
+                strings: [_('All Windows'), _('Focused Window'), _('Maximized Windows')],
             }),
         });
         groupGeneral.add(rowBehaviour);
@@ -35,6 +49,9 @@ export default class PeekBarPreferences extends ExtensionPreferences {
         rowBehaviour.connect('notify::selected', () => {
             settings.set_enum('behaviour', rowBehaviour.selected);
         });
+
+        rowHideTopBar.bind_property('active', rowShowFullscreen, 'sensitive', 0);
+        rowHideTopBar.bind_property('active', rowBehaviour, 'sensitive', 0);
 
         const groupInteraction = new Adw.PreferencesGroup({ title: _('Interaction') });
         page.add(groupInteraction);

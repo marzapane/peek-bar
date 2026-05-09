@@ -8,8 +8,13 @@
   <schema path="/org/gnome/shell/extensions/peek-bar/" id="org.gnome.shell.extensions.peek-bar">
     <key type="b" name="intellihide">
       <default>true</default>
-      <summary>Intellihide</summary>
-      <description>Whether to intelligently hide the top bar</description>
+      <summary>Hide Top Bar</summary>
+      <description>Whether to automatically hide the top bar</description>
+    </key>
+    <key type="b" name="show-indicator">
+      <default>true</default>
+      <summary>Show Quick Settings toggle</summary>
+      <description>Show the Peek Bar toggle in the Quick Settings panel</description>
     </key>
     <key type="b" name="hide-from-windows">
       <default>false</default>

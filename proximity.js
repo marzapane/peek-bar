@@ -34,12 +34,11 @@ export const Mode = {
 }
 
 class ProximityRectWatch {
-  constructor(rect, monitorIndex, mode, xThreshold, yThreshold, handler) {
+  constructor(rect, monitorIndex, mode, handler) {
     this.rect = rect
     this.monitorIndex = monitorIndex
     this.overlap = false
     this.mode = mode
-    this.threshold = [xThreshold, yThreshold]
     this.handler = handler
   }
 
@@ -47,8 +46,8 @@ class ProximityRectWatch {
 }
 
 class ProximityActorWatch extends ProximityRectWatch {
-  constructor(actor, monitorIndex, mode, xThreshold, yThreshold, handler) {
-    super(null, monitorIndex, mode, xThreshold, yThreshold, handler)
+  constructor(actor, monitorIndex, mode, handler) {
+    super(null, monitorIndex, mode, handler)
     this.actor = actor
 
     this._allocationChangedId = actor.connect('notify::allocation', () =>
@@ -66,10 +65,10 @@ class ProximityActorWatch extends ProximityRectWatch {
     let [actorX, actorY] = this.actor.get_position()
 
     this.rect = new Mtk.Rectangle({
-      x: actorX - this.threshold[0],
-      y: actorY - this.threshold[1],
-      width: this.actor.width + this.threshold[0] * 2,
-      height: this.actor.height + this.threshold[1] * 2,
+      x: actorX,
+      y: actorY,
+      width: this.actor.width,
+      height: this.actor.height,
     })
   }
 }
@@ -87,7 +86,7 @@ export class ProximityManager {
     this._setFocusedWindow()
   }
 
-  createWatch(watched, monitorIndex, mode, xThreshold, yThreshold, handler) {
+  createWatch(watched, monitorIndex, mode, handler) {
     let constr =
       watched instanceof Mtk.Rectangle
         ? ProximityRectWatch
@@ -97,8 +96,6 @@ export class ProximityManager {
       watched,
       monitorIndex,
       mode,
-      xThreshold,
-      yThreshold,
       handler,
     )
 
@@ -277,15 +274,6 @@ export class ProximityManager {
   }
 
   _checkProximity(metaWindow, watch) {
-    let windowRect = metaWindow.get_frame_rect()
-
-    return (
-      windowRect.overlap(watch.rect) &&
-      ((!watch.threshold[0] && !watch.threshold[1]) ||
-        metaWindow.get_monitor() == watch.monitorIndex ||
-        windowRect.overlap(
-          global.display.get_monitor_geometry(watch.monitorIndex),
-        ))
-    )
+    return metaWindow.get_frame_rect().overlap(watch.rect)
   }
 }

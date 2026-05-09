@@ -95,24 +95,31 @@ class StockTopBarController {
     this._signalsHandler.add(
       [
         this._settings,
+        'changed::intellihide',
+        () => this._updateCore(),
+      ],
+      [
+        this._settings,
         [
           'changed::use-pointer',
           'changed::use-pressure',
-          'changed::hide-from-windows',
           'changed::behaviour',
           'changed::pressure-threshold',
           'changed::pressure-time',
         ],
-        () => {
-          this._resetCore();
-        },
+        () => this._resetCore(),
+      ],
+      [
+        this._settings,
+        'changed::show-indicator',
+        () => this._updateIndicator(),
       ],
     )
 
     this._bindShortcut()
     this._setupIndicator()
 
-    this._enableCore()
+    this._updateCore()
   }
 
   disable() {
@@ -126,7 +133,11 @@ class StockTopBarController {
   }
 
   _updateCore() {
-    if (!this._coreEnabled) this._enableCore()
+    if (this._settings.get_boolean('intellihide')) {
+      if (!this._coreEnabled) this._enableCore()
+    } else {
+      this._disableCore()
+    }
   }
 
   _enableCore() {
@@ -254,8 +265,18 @@ class StockTopBarController {
   }
 
   _setupIndicator() {
+    if (this._indicator) return
+    if (!this._settings.get_boolean('show-indicator')) return
     this._indicator = new PeekBarIndicator(this._settings, this._extension)
     Main.panel.statusArea.quickSettings.addExternalIndicator(this._indicator)
+  }
+
+  _updateIndicator() {
+    if (this._settings.get_boolean('show-indicator')) {
+      this._setupIndicator()
+    } else {
+      this._destroyIndicator()
+    }
   }
 
   _destroyIndicator() {
