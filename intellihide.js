@@ -51,18 +51,16 @@ export const Hold = {
 }
 
 export class Intellihide {
-  constructor(panelAdapter, settings, notificationSettings) {
-    this._panelAdapter = panelAdapter
-    this._panelBox = panelAdapter.panelBox
-    this._panelManager = panelAdapter.panelManager
-    this._proximityManager = this._panelManager.proximityManager
+  constructor(proximityManager, settings, notificationSettings) {
+    this._proximityManager = proximityManager
     this._settings = settings
     this._notificationSettings = notificationSettings
     this._holdStatus = Hold.NONE
 
     this._signalsHandler = new Utils.GlobalSignalsHandler()
     this._timeoutsHandler = new Utils.TimeoutsHandler()
-    this._monitor = this._panelAdapter.monitor
+    this._panelBox = Main.layoutManager.panelBox
+    this._monitor = Main.layoutManager.primaryMonitor
     this._animationDestination = -1
     this._pendingUpdate = false
     this._overviewTransition = false
@@ -78,7 +76,7 @@ export class Intellihide {
     // We use the panelBox actor itself so the rect tracks the actual bar.
     this._proximityWatchId = this._proximityManager.createWatch(
       this._panelBox,
-      this._panelAdapter.monitor.index,
+      this._monitor.index,
       this._settings.get_enum('behaviour'),
       (overlap) => {
         this._windowOverlap = overlap
@@ -141,21 +139,10 @@ export class Intellihide {
     let setOverviewTransition = (active) => {
       this._overviewTransition = active
       this._hover = false
-      this._hoveredOut = false
       this._queueUpdatePanelPosition()
     }
 
     this._signalsHandler.add(
-      [
-        this._panelAdapter.taskbar,
-        ['menu-closed', 'end-drag'],
-        () => this._queueUpdatePanelPosition(),
-      ],
-      [
-        this._panelAdapter.taskbar.previewMenu,
-        'open-state-changed',
-        () => this._queueUpdatePanelPosition(),
-      ],
       [Main.overview, 'showing', () => setOverviewTransition(true)],
       [Main.overview, 'shown', () => setOverviewTransition(false)],
       [Main.overview, 'hiding', () => setOverviewTransition(true)],
@@ -323,8 +310,6 @@ export class Intellihide {
   _checkIfShouldBeVisible(fromRevealMechanism) {
     if (
       Main.overview.visibleTarget ||
-      this._panelAdapter.taskbar.previewMenu.opened ||
-      this._panelAdapter.taskbar._dragMonitor ||
       this._hover ||
       Main.layoutManager.panelBox.get_hover() ||
       this._checkIfGrab()
@@ -352,10 +337,10 @@ export class Intellihide {
     let isGrab =
       sourceActor &&
       (sourceActor == Main.layoutManager.dummyCursor ||
-        this._panelAdapter.statusArea.quickSettings?.menu.actor.contains(
+        Main.panel.statusArea.quickSettings?.menu.actor.contains(
           sourceActor,
         ) ||
-        this._panelAdapter.panel.contains(sourceActor))
+        Main.panel.contains(sourceActor))
 
     if (!isGrab && Main.panel.menuManager?.activeMenu)
       isGrab = true
@@ -373,14 +358,9 @@ export class Intellihide {
   _revealPanel(immediate) {
     if (!this._panelBox.visible) {
       this._panelBox.visible = true
-      this._panelAdapter.taskbar._shownInitially = false
     }
 
-    this._animatePanel(
-      0,
-      immediate,
-      () => (this._panelAdapter.taskbar._shownInitially = true),
-    )
+    this._animatePanel(0, immediate)
   }
 
   _hidePanel(immediate, hoveredOut) {

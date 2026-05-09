@@ -26,7 +26,6 @@ import GObject from 'gi://GObject'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 import { PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMenu.js'
 import { QuickMenuToggle, SystemIndicator } from 'resource:///org/gnome/shell/ui/quickSettings.js'
-import { EventEmitter } from 'resource:///org/gnome/shell/misc/signals.js'
 import {
   Extension,
   InjectionManager,
@@ -147,9 +146,8 @@ class StockTopBarController {
     this.proximityManager = new Proximity.ProximityManager()
     this._coreSignalsHandler = new Utils.GlobalSignalsHandler()
     this._injectionManager = new InjectionManager()
-    this._panelAdapter = this._createPanelAdapter()
 
-    if (!this._panelAdapter) {
+    if (!Main.panel || !Main.layoutManager.panelBox || !Main.layoutManager.primaryMonitor) {
       this._coreEnabled = false;
       return
     }
@@ -164,7 +162,6 @@ class StockTopBarController {
         () => {
           if (!Main.layoutManager.primaryMonitor) return
 
-          this._panelAdapter.monitor = Main.layoutManager.primaryMonitor
           this._resetCore()
         },
       ]
@@ -187,12 +184,11 @@ class StockTopBarController {
 
     this.proximityManager?.destroy()
     this.proximityManager = null
-    this._panelAdapter = null
   }
 
   _createIntellihide() {
     this.intellihide = new Intellihide.Intellihide(
-      this._panelAdapter,
+      this.proximityManager,
       this._settings,
       this._notificationSettings,
     );
@@ -304,35 +300,7 @@ class StockTopBarController {
     Main.wm.removeKeybinding('toggle-shortcut')
   }
 
-  _createPanelAdapter() {
-    let panel = Main.panel
-    let panelBox = Main.layoutManager.panelBox
-    let monitor = Main.layoutManager.primaryMonitor
 
-    if (!panel || !panelBox || !monitor) return null
-
-    let taskbar = new EventEmitter()
-    taskbar.previewMenu = new EventEmitter()
-    taskbar.previewMenu.opened = false
-    taskbar._dragMonitor = 0
-    taskbar._shownInitially = true
-
-    return {
-      panelManager: this,
-      panel,
-      statusArea: panel.statusArea,
-      panelBox,
-      monitor,
-      taskbar,
-      isPrimary: true,
-      get geom() {
-        return {
-          position: St.Side.TOP,
-          outerSize: panelBox.height,
-        }
-      },
-    }
-  }
 }
 
 export default class TopBarIntellihideExtension extends Extension {
