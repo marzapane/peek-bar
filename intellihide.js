@@ -67,7 +67,6 @@ export class Intellihide {
     this._pendingUpdate = false
     this._overviewTransition = false
     this._hover = false
-    this._hoveredOut = false
     this._windowOverlap = false
 
     this._panelBox.translation_y = 0
@@ -278,9 +277,10 @@ export class Intellihide {
 
       if (hover == this._hover) return
 
-      this._hoveredOut = !hover
       this._hover = hover
-      this._queueUpdatePanelPosition()
+      // Pass hoveredOut=true so close-delay is applied, but still route
+      // through _checkIfShouldBeVisible so open menus keep the panel up.
+      this._queueUpdatePanelPosition(false, !hover)
     }
   }
 
@@ -294,7 +294,7 @@ export class Intellihide {
     )
   }
 
-  _queueUpdatePanelPosition(fromRevealMechanism) {
+  _queueUpdatePanelPosition(fromRevealMechanism, hoveredOut) {
     if (
       !fromRevealMechanism &&
       this._timeoutsHandler.getId(T2) &&
@@ -304,7 +304,7 @@ export class Intellihide {
     } else if (!this._holdStatus) {
       this._checkIfShouldBeVisible(fromRevealMechanism)
         ? this._revealPanel()
-        : this._hidePanel()
+        : this._hidePanel(false, hoveredOut)
       this._timeoutsHandler.add([
         T2,
         MIN_UPDATE_MS,
@@ -383,12 +383,12 @@ export class Intellihide {
     )
   }
 
-  _hidePanel(immediate) {
+  _hidePanel(immediate, hoveredOut) {
     let size = this._panelBox.height
-    this._animatePanel(-size, immediate)
+    this._animatePanel(-size, immediate, hoveredOut)
   }
 
-  _animatePanel(destination, immediate, onComplete) {
+  _animatePanel(destination, immediate, hoveredOut, onComplete) {
     if (destination === this._animationDestination) return
 
     Utils.stopAnimations(this._panelBox)
@@ -413,7 +413,7 @@ export class Intellihide {
 
       if (this._overviewTransition) {
         delay = 0
-      } else if (destination != 0 && this._hoveredOut)
+      } else if (destination != 0 && hoveredOut)
         delay = this._settings.get_int('close-delay') * 0.001
       else if (destination == 0)
         delay = this._settings.get_int('reveal-delay') * 0.001
@@ -434,7 +434,5 @@ export class Intellihide {
       tweenOpts.translation_y = destination
       Utils.animate(this._panelBox, tweenOpts)
     }
-
-    this._hoveredOut = false
   }
 }
