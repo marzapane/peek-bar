@@ -23,6 +23,19 @@ export default class PeekBarPreferences extends ExtensionPreferences {
         groupGeneral.add(rowShowFullscreen);
         settings.bind('show-in-fullscreen', rowShowFullscreen, 'active', Gio.SettingsBindFlags.DEFAULT);
 
+        const rowBehaviour = new Adw.ComboRow({
+            title: _('Overlap Detection'),
+            subtitle: _('Which windows to consider when determining overlap'),
+            model: new Gtk.StringList({
+                strings: [_('All Windows'), _('Focused Windows'), _('Maximized Windows')],
+            }),
+        });
+        groupGeneral.add(rowBehaviour);
+        rowBehaviour.selected = settings.get_enum('behaviour');
+        rowBehaviour.connect('notify::selected', () => {
+            settings.set_enum('behaviour', rowBehaviour.selected);
+        });
+
         const groupInteraction = new Adw.PreferencesGroup({ title: _('Interaction') });
         page.add(groupInteraction);
 

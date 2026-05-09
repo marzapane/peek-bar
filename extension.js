@@ -44,14 +44,15 @@ const PeekBarIndicator = GObject.registerClass(
 
       this.quickToggle = new QuickMenuToggle({
         title: 'Peek Bar',
-        iconName: 'view-reveal-symbolic',
+        iconName: 'focus-top-bar-symbolic',
         toggleMode: true,
       })
 
-      this.quickToggle.menu.setHeader('view-reveal-symbolic', 'Peek Bar')
+      this.quickToggle.menu.setHeader('focus-top-bar-symbolic', 'Peek Bar')
 
       let prefsItem = new PopupMenuItem('Settings')
       prefsItem.connect('activate', () => {
+        Main.panel.closeQuickSettings()
         extension.openPreferences()
       })
       this.quickToggle.menu.addMenuItem(prefsItem)
@@ -94,18 +95,10 @@ class StockTopBarController {
     this._signalsHandler.add(
       [
         this._settings,
-        'changed::intellihide',
-        () => {
-          this._updateCore();
-        },
-      ],
-      [
-        this._settings,
         [
           'changed::use-pointer',
           'changed::use-pressure',
           'changed::hide-from-windows',
-          'changed::hide-from-monitor-windows',
           'changed::behaviour',
           'changed::pressure-threshold',
           'changed::pressure-time',
@@ -119,7 +112,7 @@ class StockTopBarController {
     this._bindShortcut()
     this._setupIndicator()
 
-    this._updateCore()
+    this._enableCore()
   }
 
   disable() {
@@ -133,12 +126,7 @@ class StockTopBarController {
   }
 
   _updateCore() {
-    let isEnabled = this._settings.get_boolean('intellihide');
-    if (isEnabled) {
-      if (!this._coreEnabled) this._enableCore()
-    } else {
-      this._disableCore()
-    }
+    if (!this._coreEnabled) this._enableCore()
   }
 
   _enableCore() {

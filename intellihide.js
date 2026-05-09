@@ -76,19 +76,23 @@ export class Intellihide {
     this._bindGeneralSignals()
 
     if (this._hidesFromWindows()) {
+      // Watch only the panel bar area, not the entire screen.
+      // For 'hide-from-windows', use the panelBox actor itself so the rect
+      // tracks the actual bar. For 'hide-from-monitor-windows', build an
+      // explicit rectangle limited to the panel's height.
       const watched = this._settings.get_boolean('hide-from-windows')
-        ? this._panelBox.get_parent()
+        ? this._panelBox
         : new Mtk.Rectangle({
           x: this._monitor.x,
           y: this._monitor.y,
           width: this._monitor.width,
-          height: this._monitor.height,
+          height: this._panelBox.height || 32,
         })
 
       this._proximityWatchId = this._proximityManager.createWatch(
         watched,
         this._panelAdapter.monitor.index,
-        Proximity.Mode[this._settings.get_string('behaviour')],
+        this._settings.get_enum('behaviour'),
         0,
         0,
         (overlap) => {
@@ -149,10 +153,7 @@ export class Intellihide {
   }
 
   _hidesFromWindows() {
-    return (
-      this._settings.get_boolean('hide-from-windows') ||
-      this._settings.get_boolean('hide-from-monitor-windows')
-    )
+    return true
   }
 
   _bindGeneralSignals() {
@@ -358,10 +359,6 @@ export class Intellihide {
       }
 
       return !mouseBtnIsPressed
-    }
-
-    if (!this._hidesFromWindows()) {
-      return this._hover
     }
 
     return !this._windowOverlap
