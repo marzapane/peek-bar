@@ -265,8 +265,8 @@ export class ProximityManager {
     if (watch.mode === Mode.MAXIMIZED_WINDOWS)
       return metaWindows.some(
         (mw) =>
-          mw.maximized_vertically &&
-          mw.maximized_horizontally &&
+          (mw.is_fullscreen() ||
+            (mw.maximized_vertically && mw.maximized_horizontally)) &&
           mw.get_monitor() == watch.monitorIndex,
       )
 

@@ -18,7 +18,6 @@
 
 import Clutter from 'gi://Clutter'
 import Meta from 'gi://Meta'
-import Mtk from 'gi://Mtk'
 import Shell from 'gi://Shell'
 
 import * as Layout from 'resource:///org/gnome/shell/ui/layout.js'
@@ -153,8 +152,8 @@ export class Intellihide {
     if (isWayland) {
       this._signalsHandler.add([
         this._panelBox,
-        'notify::visible',
-        () => Utils.setDisplayUnredirect(!this._panelBox.visible),
+        'notify::translation-y',
+        () => Utils.setDisplayUnredirect(this._panelBox.translation_y < 0),
       ])
     }
   }
@@ -255,7 +254,7 @@ export class Intellihide {
     ) {
       this._hover = true
       this._queueUpdatePanelPosition(true)
-    } else if (this._panelBox.visible) {
+    } else if (this._animationDestination === 0) {
       let keepRevealedOnHover = this._settings.get_boolean('revealed-hover')
       let fixedOffset = keepRevealedOnHover
         ? this._panelBox.height
@@ -356,10 +355,6 @@ export class Intellihide {
   }
 
   _revealPanel(immediate) {
-    if (!this._panelBox.visible) {
-      this._panelBox.visible = true
-    }
-
     this._animatePanel(0, immediate)
   }
 
@@ -368,7 +363,7 @@ export class Intellihide {
     this._animatePanel(-size, immediate, hoveredOut)
   }
 
-  _animatePanel(destination, immediate, hoveredOut, onComplete) {
+  _animatePanel(destination, immediate, hoveredOut) {
     if (destination === this._animationDestination) return
 
     Utils.stopAnimations(this._panelBox)
@@ -386,7 +381,6 @@ export class Intellihide {
 
     if (immediate) {
       this._panelBox.translation_y = destination
-      this._panelBox.visible = !destination
       update()
     } else if (destination !== this._panelBox.translation_y) {
       let delay = 0
@@ -404,11 +398,7 @@ export class Intellihide {
           : this._settings.get_int('animation-time') * 0.001,
         delay,
         transition: 'easeOutQuad',
-        onComplete: () => {
-          this._panelBox.visible = !destination
-          onComplete ? onComplete() : null
-          update()
-        },
+        onComplete: () => update(),
       }
 
       tweenOpts.translation_y = destination

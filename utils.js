@@ -156,14 +156,19 @@ export const setDisplayUnredirect = (() => {
   return (enable) => {
     let v48 = Config.PACKAGE_VERSION >= '48'
 
-    if (enable && !unredirectEnabled)
+    // //Uncomment to verify unredirection fires when the panel slides off-screen (translation_y < 0).
+    // // Each hide should log "Enabling" and each reveal "Disabling" at: journalctl -f -o cat /usr/bin/gnome-shell
+    if (enable && !unredirectEnabled) {
+      // console.log('[Peek Bar] Enabling compositor unredirection (optimization active)');
       v48
         ? global.compositor.enable_unredirect()
         : Meta.enable_unredirect_for_display(global.display)
-    else if (!enable && unredirectEnabled)
+    } else if (!enable && unredirectEnabled) {
+      // console.log('[Peek Bar] Disabling compositor unredirection (rendering top bar)');
       v48
         ? global.compositor.disable_unredirect()
         : Meta.disable_unredirect_for_display(global.display)
+    }
 
     unredirectEnabled = enable
   }
