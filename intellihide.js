@@ -146,6 +146,14 @@ export class Intellihide {
       [Main.overview, 'shown', () => setOverviewTransition(false)],
       [Main.overview, 'hiding', () => setOverviewTransition(true)],
       [Main.overview, 'hidden', () => setOverviewTransition(false)],
+      // Re-evaluate panel visibility promptly when switching workspaces.
+      // Without this, the panel may remain briefly visible after returning
+      // to a workspace where tiled windows should trigger hiding.
+      [
+        global.window_manager,
+        'switch-workspace',
+        () => this._queueUpdatePanelPosition(),
+      ],
     )
 
     let isWayland = typeof Meta.is_wayland_compositor === 'function' ? Meta.is_wayland_compositor() : true;
@@ -162,6 +170,17 @@ export class Intellihide {
     let actorData = Utils.getTrackedActorData(this._panelBox)
     if (!actorData) {
       console.warn('[Peek Bar] Could not find tracked actor data for panel box')
+      return
+    }
+
+    // When disabling during session lock, don't restore panel struts.
+    // Restoring struts shrinks the work area and causes Mutter to push
+    // half-tiled windows (e.g. from tiling-assistant) below the panel.
+    // Those windows can't recover their position on unlock because
+    // tiling-assistant restores only metadata, not geometry.  The lock
+    // screen covers everything, so the strut change is unnecessary.
+    if (!enable && Main.sessionMode.isLocked) {
+      this._panelBox.visible = true
       return
     }
 
