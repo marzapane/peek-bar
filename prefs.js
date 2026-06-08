@@ -23,19 +23,12 @@ export default class PeekBarPreferences extends ExtensionPreferences {
         groupGeneral.add(rowHideTopBar);
         settings.bind('intellihide', rowHideTopBar, 'active', Gio.SettingsBindFlags.DEFAULT);
 
-        const rowShowIndicator = new Adw.SwitchRow({
-            title: _('Show Quick Settings Toggle'),
-            subtitle: _('Show the Peek Bar toggle in the Quick Settings panel'),
+        const rowAlwaysHide = new Adw.SwitchRow({
+            title: _('Always Hide'),
+            subtitle: _('Hide the top bar at all times — reveal it by moving the cursor to the top edge'),
         });
-        groupGeneral.add(rowShowIndicator);
-        settings.bind('show-indicator', rowShowIndicator, 'active', Gio.SettingsBindFlags.DEFAULT);
-
-        const rowShowFullscreen = new Adw.SwitchRow({
-            title: _('Show in Fullscreen'),
-            subtitle: _('Allow revealing the bar while an application is in fullscreen'),
-        });
-        groupGeneral.add(rowShowFullscreen);
-        settings.bind('show-in-fullscreen', rowShowFullscreen, 'active', Gio.SettingsBindFlags.DEFAULT);
+        groupGeneral.add(rowAlwaysHide);
+        settings.bind('always-hide', rowAlwaysHide, 'active', Gio.SettingsBindFlags.DEFAULT);
 
         const rowBehaviour = new Adw.ComboRow({
             title: _('Overlap Detection'),
@@ -50,8 +43,30 @@ export default class PeekBarPreferences extends ExtensionPreferences {
             settings.set_enum('behaviour', rowBehaviour.selected);
         });
 
+        const rowShowFullscreen = new Adw.SwitchRow({
+            title: _('Show in Fullscreen'),
+            subtitle: _('Allow revealing the bar while an application is in fullscreen'),
+        });
+        groupGeneral.add(rowShowFullscreen);
+        settings.bind('show-in-fullscreen', rowShowFullscreen, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        const rowShowIndicator = new Adw.SwitchRow({
+            title: _('Show Quick Settings Toggle'),
+            subtitle: _('Show the Peek Bar toggle in the Quick Settings panel'),
+        });
+        groupGeneral.add(rowShowIndicator);
+        settings.bind('show-indicator', rowShowIndicator, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        rowHideTopBar.bind_property('active', rowAlwaysHide, 'sensitive', 0);
         rowHideTopBar.bind_property('active', rowShowFullscreen, 'sensitive', 0);
-        rowHideTopBar.bind_property('active', rowBehaviour, 'sensitive', 0);
+
+        // Overlap Detection is irrelevant in always-hide mode (the result is ignored).
+        const updateOverlapSensitivity = () => {
+            rowBehaviour.sensitive = rowHideTopBar.active && !rowAlwaysHide.active;
+        };
+        rowHideTopBar.connect('notify::active', updateOverlapSensitivity);
+        rowAlwaysHide.connect('notify::active', updateOverlapSensitivity);
+        updateOverlapSensitivity();
 
         const groupInteraction = new Adw.PreferencesGroup({ title: _('Interaction') });
         page.add(groupInteraction);

@@ -11,6 +11,11 @@
       <summary>Hide Top Bar</summary>
       <description>Whether to automatically hide the top bar</description>
     </key>
+    <key type="b" name="always-hide">
+      <default>false</default>
+      <summary>Always hide the top bar</summary>
+      <description>Hide the top bar at all times, regardless of window overlap. The bar can still be revealed via the overview or by moving the cursor to the top edge.</description>
+    </key>
     <key type="b" name="show-indicator">
       <default>true</default>
       <summary>Show Quick Settings toggle</summary>

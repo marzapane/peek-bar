@@ -83,7 +83,8 @@ export class Intellihide {
       },
     )
 
-    if (this._settings.get_boolean('use-pointer'))
+    if (this._settings.get_boolean('use-pointer') ||
+        this._settings.get_boolean('always-hide'))
       this._setRevealMechanism()
 
     this._validateSettings()
@@ -345,6 +346,9 @@ export class Intellihide {
 
       return !mouseBtnIsPressed
     }
+
+    if (this._settings.get_boolean('always-hide'))
+      return false
 
     return !this._windowOverlap
   }

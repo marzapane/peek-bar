@@ -100,6 +100,7 @@ class StockTopBarController {
       [
         this._settings,
         [
+          'changed::always-hide',
           'changed::use-pointer',
           'changed::use-pressure',
           'changed::behaviour',
