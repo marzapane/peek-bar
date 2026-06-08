@@ -181,14 +181,11 @@ export class Intellihide {
     // tiling-assistant restores only metadata, not geometry.  The lock
     // screen covers everything, so the strut change is unnecessary.
     if (!enable && Main.sessionMode.isLocked) {
-      this._panelBox.visible = true
       return
     }
 
     actorData.affectsStruts = !enable
     actorData.trackFullscreen = !enable
-
-    this._panelBox.visible = enable ? enable : this._panelBox.visible
 
     Main.layoutManager._queueUpdateRegions()
   }

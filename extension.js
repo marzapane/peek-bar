@@ -250,7 +250,7 @@ class StockTopBarController {
           (original) => {
             let controller = this;
             return function () {
-              if (controller.intellihide && !Main.layoutManager.panelBox.visible) {
+              if (controller.intellihide && Main.layoutManager.panelBox.translation_y < 0) {
                 controller.intellihide._revealPanel(true)
               }
               original.call(this)
